@@ -18,8 +18,10 @@ function delaySwitch(log, config, api) {
     this.timer;
     this.switchOn = false;
     this.motionTriggered = false;
-    this.uuid = UUIDGen.generate(this.name)
+    this.uuid = UUIDGen.generate(this.name);
     this.startTime = new Date();
+    this.stopTime = this.startTime
+    this.remaining = this.delay
 }
 
 delaySwitch.prototype.getServices = function () {
@@ -58,31 +60,35 @@ delaySwitch.prototype.getServices = function () {
 
 
 delaySwitch.prototype.setOn = function (on, callback) {
-    var currentTime = new Date();
-    var timeDiff = currentTime - this.startTime;
 
     if (!on) {
-        if (timeDiff > 10) {
-            this.log('Stopping the Timer');
-            this.switchOn = false;
-            clearTimeout(this.timer);
-            this.startTime = new Date();
-            this.motionTriggered = false;
-            if (!this.disableSensor) this.motionService.getCharacteristic(Characteristic.MotionDetected).updateValue(false);
-        }
-    } else {
-        this.startTime = new Date();
-        if (timeDiff>10) {
-            this.log('Starting the Timer');
-            this.switchOn = true;
+        this.log('Stopping the Timer');
 
-            clearTimeout(this.timer);
-            this.timer = setTimeout(function () {
+        this.switchOn = false;
+        clearInterval(this.timer);
+        this.motionTriggered = false;
+        if (!this.disableSensor) this.motionService.getCharacteristic(Characteristic.MotionDetected).updateValue(false);
+        this.stopTime = new Date();
+    } else {
+        this.log('Starting the Timer');
+        this.switchOn = true;
+        var gap = new Date() - this.stopTime
+        if (gap > 5000) {
+            this.log('Reset timer')
+            this.startTime = new Date();
+            clearInterval(this.timer);
+            this.remaining = this.delay
+        }
+
+        this.timer = setInterval(function () {
+            this.currentTimer = new Date()
+            this.lapse = this.currentTimer - this.startTime
+            this.remaining = this.delay - this.lapse
+            if (this.lapse > this.remaining) {
                 this.log('Time is Up!');
-                this.startTime = new Date();
+                clearInterval(this.timer)
                 this.switchService.getCharacteristic(Characteristic.On).updateValue(false);
                 this.switchOn = false;
-
                 if (!this.disableSensor) {
                     this.motionTriggered = true;
                     this.motionService.getCharacteristic(Characteristic.MotionDetected).updateValue(true);
@@ -92,11 +98,9 @@ delaySwitch.prototype.setOn = function (on, callback) {
                         this.motionTriggered = false;
                     }.bind(this), 3000);
                 }
-
-            }.bind(this), this.delay);
-        }
+            }
+        }.bind(this), 30 * 100);
     }
-
     callback();
 }
 
@@ -108,11 +112,3 @@ delaySwitch.prototype.getOn = function (callback) {
 delaySwitch.prototype.getMotion = function (callback) {
     callback(null, this.motionTriggered);
 }
-
-$("input#button").click(function () {
-    startTime = new Date();
-    setTimeout(display, 1000);
-});
-
-
-
