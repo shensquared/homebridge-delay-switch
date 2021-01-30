@@ -21,7 +21,6 @@ function delaySwitch(log, config, api) {
     this.uuid = UUIDGen.generate(this.name);
     this.startTime = new Date();
     this.stopTime = this.startTime
-    this.remaining = this.delay
 }
 
 delaySwitch.prototype.getServices = function () {
@@ -77,14 +76,12 @@ delaySwitch.prototype.setOn = function (on, callback) {
             this.log('Reset timer')
             this.startTime = new Date();
             clearInterval(this.timer);
-            this.remaining = this.delay
         }
 
         this.timer = setInterval(function () {
             this.currentTimer = new Date()
             this.lapse = this.currentTimer - this.startTime
-            this.remaining = this.delay - this.lapse
-            if (this.lapse > this.remaining) {
+            if (this.lapse > this.delay) {
                 this.log('Time is Up!');
                 clearInterval(this.timer)
                 this.switchService.getCharacteristic(Characteristic.On).updateValue(false);
@@ -103,7 +100,6 @@ delaySwitch.prototype.setOn = function (on, callback) {
     }
     callback();
 }
-
 
 delaySwitch.prototype.getOn = function (callback) {
     callback(null, this.switchOn);
