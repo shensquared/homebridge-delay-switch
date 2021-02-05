@@ -66,13 +66,13 @@ delaySwitch.prototype.setOn = function (on, callback) {
         this.switchOn = false;
         clearInterval(this.timer);
         this.motionTriggered = false;
-        if (!this.disableSensor) this.motionService.getCharacteristic(Characteristic.MotionDetected).updateValue(false);
+        // if (!this.disableSensor) this.motionService.getCharacteristic(Characteristic.MotionDetected).updateValue(false);
         this.stopTime = new Date();
     } else {
         this.log('Starting the Timer');
         this.switchOn = true;
         var gap = new Date() - this.stopTime
-        if (gap > 5000) {
+        if (gap > 30000) {
             this.log('Reset timer')
             this.startTime = new Date();
             clearInterval(this.timer);
@@ -85,7 +85,6 @@ delaySwitch.prototype.setOn = function (on, callback) {
                 this.log('Time is Up!');
                 clearInterval(this.timer)
                 this.switchService.getCharacteristic(Characteristic.On).updateValue(false);
-                this.switchOn = false;
                 if (!this.disableSensor) {
                     this.motionTriggered = true;
                     this.motionService.getCharacteristic(Characteristic.MotionDetected).updateValue(true);
@@ -94,9 +93,10 @@ delaySwitch.prototype.setOn = function (on, callback) {
                         this.motionService.getCharacteristic(Characteristic.MotionDetected).updateValue(false);
                         this.motionTriggered = false;
                     }.bind(this), 3000);
-                }
+                };
+                // this.stopTime -= 120000;
             }
-        }.bind(this), 30 * 100);
+        }.bind(this), 20 * 1000);
     }
     callback();
 }
