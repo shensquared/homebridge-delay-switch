@@ -68,12 +68,15 @@ delaySwitch.prototype.setOn = function (on, callback) {
         this.motionTriggered = false;
         // if (!this.disableSensor) this.motionService.getCharacteristic(Characteristic.MotionDetected).updateValue(false);
         this.stopTime = new Date();
-        setTimeout(function () {
-            const execSync = require('child_process').execSync;
-            // import { execSync } from 'child_process';  // replace ^ if using ES modules
-            const output = execSync('pmset displaysleepnow', { encoding: 'utf-8' });  // the default is 'buffer'
-            this.log('Putting display to sleep');
-        }.bind(this), 5*60*1000);
+        // setTimeout(function () {
+        //     if (this.switchOn == false){
+        //                 const execSync = require('child_process').execSync;
+        //     // import { execSync } from 'child_process';  // replace ^ if using ES modules
+        //     const output = execSync('pmset displaysleepnow', { encoding: 'utf-8' });  // the default is 'buffer'
+        //     this.log('Putting display to sleep');
+        //     }
+        // }.bind(this), 5*60*1000);
+        // amphetamine is better for this.
     } else {
         this.log('Starting the Timer');
         this.switchOn = true;
